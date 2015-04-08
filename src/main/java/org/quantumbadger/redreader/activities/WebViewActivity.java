@@ -40,7 +40,8 @@ public class WebViewActivity extends Activity implements RedditPostView.PostSele
 	private WebViewFragment webView;
 	public static final int VIEW_IN_BROWSER = 10,
 			CLEAR_CACHE = 20,
-			USE_HTTPS = 30;
+			USE_HTTPS = 30,
+            SHARE_PUSHBULLET = 40;
 
 	private RedditPost mPost;
 
@@ -115,6 +116,17 @@ public class WebViewActivity extends Activity implements RedditPostView.PostSele
 				Toast.makeText(this, R.string.web_view_clear_cache_success_toast, Toast.LENGTH_LONG).show();
 				return true;
 
+			case SHARE_PUSHBULLET:
+
+				//webView.clearCache();
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, currentUrl);
+                sendIntent.setType("text/plain");
+                startActivity(sendIntent);
+				Toast.makeText(this, R.string.web_view_shared_pushbullet_toast, Toast.LENGTH_LONG).show();
+				return true;
+
 			case USE_HTTPS:
 
 				if(currentUrl != null) {
@@ -143,6 +155,7 @@ public class WebViewActivity extends Activity implements RedditPostView.PostSele
 		menu.add(0, VIEW_IN_BROWSER, 0, R.string.web_view_open_browser);
 		menu.add(0, CLEAR_CACHE, 1, R.string.web_view_clear_cache);
 		menu.add(0, USE_HTTPS, 2, R.string.webview_use_https);
+		menu.add(0, SHARE_PUSHBULLET, 3, R.string.webview_share_pushbullet);
 		return super.onCreateOptionsMenu(menu);
 	}
 
