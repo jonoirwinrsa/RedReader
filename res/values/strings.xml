@@ -624,5 +624,7 @@
     <!-- 2015-04-06 -->
     <string name="mark_all_as_read">Mark all as read</string>
     <string name="mark_all_as_read_success">All messages marked as read.</string>
+    <string name="webview_share_pushbullet">Share page</string>
+    <string name="web_view_shared_pushbullet_toast">Shared</string>
 
 </resources>
