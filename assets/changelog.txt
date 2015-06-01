@@ -1,3 +1,9 @@
+63/1.9.0
+Switched to oAuth authentication
+Support for some types of video link (e.g. those ending in .webm)
+Workaround for imgur redirect bug
+Fixed scrolling bug when collapsing large comments (thanks to chaitan94)
+
 62/1.8.7.8
 Ability to mark all inbox messages as read
 Added intent support for https (thanks to ajs124)
@@ -5,6 +11,7 @@ Added support for redd.it links (thanks to ajs124)
 Fixed image view bug when rotating screen while touching (thanks to ThomasKomarnicki)
 Markdown link parsing improvements
 Fixed gif-related hang
+Fixed bug with subreddit names containing colons
 
 61/1.8.7.7
 Ability to sort search results (thanks to chaitan94)
