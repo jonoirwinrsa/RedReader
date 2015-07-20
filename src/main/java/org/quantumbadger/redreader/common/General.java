@@ -17,8 +17,11 @@
 
 package org.quantumbadger.redreader.common;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
@@ -29,9 +32,6 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.preference.SharedPreferences;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.activities.BugReportActivity;
 import org.quantumbadger.redreader.cache.RequestFailureType;
@@ -46,8 +46,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class General {
-
-	public static final Handler UI_THREAD_HANDLER = new Handler(Looper.getMainLooper());
 
 	private static long lastBackPress = -1;
 
@@ -142,7 +140,7 @@ public final class General {
 	}
 
 	public static void quickToast(final Context context, final String text) {
-		UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
 				Toast.makeText(context, text, Toast.LENGTH_LONG).show();
 			}
@@ -150,7 +148,7 @@ public final class General {
 	}
 
 	public static void quickToast(final Context context, final String text, final int duration) {
-		UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
 				Toast.makeText(context, text, duration).show();
 			}
@@ -298,13 +296,13 @@ public final class General {
 
 	// TODO add button to show more detail
 	public static void showResultDialog(final Activity context, final RRError error) {
-		UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
 				final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
 				alertBuilder.setNeutralButton(R.string.dialog_close, null);
 				alertBuilder.setNegativeButton(R.string.button_moredetail, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
-						ErrorPropertiesDialog.newInstance(error).show(context);
+						ErrorPropertiesDialog.newInstance(error).show(context.getFragmentManager(), "ErrorPropertiesDialog");
 					}
 				});
 				alertBuilder.setTitle(error.title);
@@ -425,5 +423,19 @@ public final class General {
 		final ArrayList<E> result = new ArrayList<E>(1);
 		result.add(obj);
 		return result;
+	}
+
+	public static String asciiUppercase(final String input) {
+
+		final char[] chars = input.toCharArray();
+
+		for(int i = 0; i < chars.length; i++) {
+			if(chars[i] >= 'a' && chars[i] <= 'z') {
+				chars[i] -= 'a';
+				chars[i] += 'A';
+			}
+		}
+
+		return new String(chars);
 	}
 }

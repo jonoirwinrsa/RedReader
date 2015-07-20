@@ -24,23 +24,15 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.ScrollView;
+import android.widget.*;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.widget.Button;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.LinearLayout;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.cache.CacheManager;
 import org.quantumbadger.redreader.cache.CacheRequest;
 import org.quantumbadger.redreader.cache.RequestFailureType;
-import org.quantumbadger.redreader.common.Constants;
-import org.quantumbadger.redreader.common.General;
-import org.quantumbadger.redreader.common.PrefsUtility;
-import org.quantumbadger.redreader.common.RRError;
+import org.quantumbadger.redreader.common.*;
 import org.quantumbadger.redreader.reddit.APIResponseHandler;
 import org.quantumbadger.redreader.reddit.RedditAPI;
 import org.quantumbadger.redreader.views.liststatus.LoadingView;
@@ -49,13 +41,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
-public class CaptchaActivity extends Activity {
+public class CaptchaActivity extends BaseActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		PrefsUtility.applyTheme(this);
-		getSupportActionBar().setTitle(R.string.post_captcha_title);
+		getActionBar().setTitle(R.string.post_captcha_title);
 
 		super.onCreate(savedInstanceState);
 
@@ -114,7 +106,7 @@ public class CaptchaActivity extends Activity {
 							return;
 						}
 
-						General.UI_THREAD_HANDLER.post(new Runnable() {
+						AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 							public void run() {
 
 								final LinearLayout ll = new LinearLayout(CaptchaActivity.this);

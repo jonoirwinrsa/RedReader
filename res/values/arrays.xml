@@ -338,4 +338,84 @@
         <item>upvoted</item>
     </string-array>
 
+    <!-- 2015-06-20 -->
+    <string-array name="pref_behaviour_screenorientation_array">
+        <item>@string/screen_orientation_auto</item>
+        <item>@string/screen_orientation_portrait</item>
+        <item>@string/screen_orientation_landscape</item>
+    </string-array>
+
+    <!-- Constants. Do not change. -->
+    <string-array name="pref_behaviour_screenorientation_array_return">
+        <item>auto</item>
+        <item>portrait</item>
+        <item>landscape</item>
+    </string-array>
+
+    <!-- 2015-06-28 -->
+
+    <string-array name="pref_menus_optionsmenu_items_items">
+        <item>@string/options_accounts</item>
+        <item>@string/options_theme</item>
+        <item>@string/options_close_all</item>
+        <item>@string/options_past</item>
+        <item>@string/options_submit_post</item>
+        <item>@string/action_search</item>
+        <item>@string/action_reply</item>
+    </string-array>
+
+    <!-- Constants. Do not change. -->
+    <string-array name="pref_menus_optionsmenu_items_items_return">
+        <item>accounts</item>
+        <item>theme</item>
+        <item>close_all</item>
+        <item>past</item>
+        <item>submit_post</item>
+        <item>search</item>
+        <item>reply</item>
+    </string-array>
+
+    <!-- Constants. Do not change. -->
+    <string-array name="pref_menus_optionsmenu_items_items_default">
+        <item>accounts</item>
+        <item>theme</item>
+        <item>past</item>
+        <item>submit_post</item>
+        <item>search</item>
+        <item>reply</item>
+    </string-array>
+
+    <!-- 2015-07-05 -->
+    <string-array name="pref_behaviour_bezel_toolbar_swipe_zone_array">
+        <item>0 dp</item>
+        <item>10 dp</item>
+        <item>20 dp</item>
+        <item>30 dp</item>
+        <item>40 dp</item>
+    </string-array>
+
+    <!-- Constants. Do not change. -->
+    <string-array name="pref_behaviour_bezel_toolbar_swipe_zone_array_return">
+        <item>0</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>40</item>
+    </string-array>
+
+    <string-array name="pref_behaviour_gifview_mode_array">
+        <item>@string/pref_behaviour_gifview_mode_internal_movie</item>
+        <item>@string/pref_behaviour_gifview_mode_internal_legacy</item>
+        <item>@string/pref_behaviour_gifview_mode_internal_browser</item>
+        <item>@string/pref_behaviour_gifview_mode_external_browser</item>
+    </string-array>
+
+    <!-- Constants. Do not change. -->
+    <string-array name="pref_behaviour_gifview_mode_array_return">
+        <item>internal_movie</item>
+        <item>internal_legacy</item>
+        <item>internal_browser</item>
+        <item>external_browser</item>
+    </string-array>
+
 </resources>

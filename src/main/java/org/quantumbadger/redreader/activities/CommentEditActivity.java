@@ -17,22 +17,22 @@
 
 package org.quantumbadger.redreader.activities;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.ProgressDialog;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.LinearLayout;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.cache.CacheManager;
 import org.quantumbadger.redreader.cache.RequestFailureType;
+import org.quantumbadger.redreader.common.AndroidApi;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.RRError;
@@ -40,7 +40,7 @@ import org.quantumbadger.redreader.fragments.MarkdownPreviewDialog;
 import org.quantumbadger.redreader.reddit.APIResponseHandler;
 import org.quantumbadger.redreader.reddit.RedditAPI;
 
-public class CommentEditActivity extends Activity {
+public class CommentEditActivity extends BaseActivity {
 
 	private EditText textEdit;
 
@@ -53,7 +53,7 @@ public class CommentEditActivity extends Activity {
 
 		super.onCreate(savedInstanceState);
 
-		final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.comment_edit);
+		final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.comment_edit, null);
 
 		textEdit = (EditText)layout.findViewById(R.id.comment_reply_text);
 
@@ -124,7 +124,7 @@ public class CommentEditActivity extends Activity {
 			final APIResponseHandler.ActionResponseHandler handler = new APIResponseHandler.ActionResponseHandler(this) {
 				@Override
 				protected void onSuccess() {
-					General.UI_THREAD_HANDLER.post(new Runnable() {
+					AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 						public void run() {
 							if(progressDialog.isShowing()) progressDialog.dismiss();
 							General.quickToast(CommentEditActivity.this, R.string.comment_edit_done);
@@ -143,7 +143,7 @@ public class CommentEditActivity extends Activity {
 
 					final RRError error = General.getGeneralErrorForFailure(context, type, t, status, null);
 
-					General.UI_THREAD_HANDLER.post(new Runnable() {
+					AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 						public void run() {
 							General.showResultDialog(CommentEditActivity.this, error);
 							if(progressDialog.isShowing()) progressDialog.dismiss();
@@ -156,7 +156,7 @@ public class CommentEditActivity extends Activity {
 
 					final RRError error = General.getGeneralErrorForFailure(context, type);
 
-					General.UI_THREAD_HANDLER.post(new Runnable() {
+					AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 						public void run() {
 							General.showResultDialog(CommentEditActivity.this, error);
 							if(progressDialog.isShowing()) progressDialog.dismiss();
@@ -173,7 +173,7 @@ public class CommentEditActivity extends Activity {
 			progressDialog.show();
 
 		} else if(item.getTitle().equals(getString(R.string.comment_reply_preview))) {
-			MarkdownPreviewDialog.newInstance(textEdit.getText().toString()).show(getSupportFragmentManager());
+			MarkdownPreviewDialog.newInstance(textEdit.getText().toString()).show(getFragmentManager(), "MarkdownPreviewDialog");
 		}
 
 		return true;

@@ -17,20 +17,21 @@
 
 package org.quantumbadger.redreader.fragments;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.Fragment;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ListView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.adapters.MainMenuAdapter;
 import org.quantumbadger.redreader.adapters.MainMenuSelectionListener;
+import org.quantumbadger.redreader.common.AndroidApi;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.RRError;
 import org.quantumbadger.redreader.common.TimestampBound;
@@ -56,11 +57,11 @@ public class MainMenuFragment extends Fragment implements MainMenuSelectionListe
 
 	private boolean force;
 
-	public static enum MainMenuAction {
+	public enum MainMenuAction {
 		FRONTPAGE, PROFILE, INBOX, SUBMITTED, UPVOTED, DOWNVOTED, SAVED, MODMAIL, HIDDEN, CUSTOM, ALL
 	}
 
-	public static enum MainMenuUserItems {
+	public enum MainMenuUserItems {
 		PROFILE, INBOX, SUBMITTED, SAVED, HIDDEN, UPVOTED, DOWNVOTED, MODMAIL
 	}
 
@@ -117,7 +118,7 @@ public class MainMenuFragment extends Fragment implements MainMenuSelectionListe
 			}
 		});
 
-		General.UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
 				notifications.addView(loadingView);
 				loadingView.setIndeterminate(R.string.download_subreddits);
@@ -164,9 +165,9 @@ public class MainMenuFragment extends Fragment implements MainMenuSelectionListe
 
 	private void onError(final RRError error) {
 		if(loadingView != null) loadingView.setDone(R.string.download_failed);
-		General.UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
-				notifications.addView(new ErrorView(getSupportActivity(), error));
+				notifications.addView(new ErrorView(getActivity(), error));
 			}
 		});
 	}
@@ -177,11 +178,11 @@ public class MainMenuFragment extends Fragment implements MainMenuSelectionListe
 	}
 
 	public void onSelected(final MainMenuAction type, final String name) {
-		((MainMenuSelectionListener)getSupportActivity()).onSelected(type, name);
+		((MainMenuSelectionListener)getActivity()).onSelected(type, name);
 	}
 
 	public void onSelected(final PostListingURL postListingURL) {
-		((MainMenuSelectionListener)getSupportActivity()).onSelected(postListingURL);
+		((MainMenuSelectionListener)getActivity()).onSelected(postListingURL);
 	}
 
 	@Override

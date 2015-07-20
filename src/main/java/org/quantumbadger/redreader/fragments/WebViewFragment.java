@@ -18,18 +18,18 @@
 package org.quantumbadger.redreader.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.*;
-import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.Fragment;
-import org.holoeverywhere.widget.FrameLayout;
-import org.holoeverywhere.widget.ProgressBar;
-import org.holoeverywhere.widget.Toast;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.cache.CacheManager;
@@ -95,9 +95,9 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 
 		final Context context = inflater.getContext();
 
-		CookieSyncManager.createInstance(getSupportActivity());
+		CookieSyncManager.createInstance(getActivity());
 
-		outer = (FrameLayout)inflater.inflate(R.layout.web_view_fragment);
+		outer = (FrameLayout)inflater.inflate(R.layout.web_view_fragment, null);
 
 		final RedditPost src_post = getArguments().getParcelable("post");
 		final RedditPreparedPost post = src_post == null ? null
@@ -132,7 +132,7 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 
 				super.onProgressChanged(view, newProgress);
 
-				General.UI_THREAD_HANDLER.post(new Runnable() {
+				AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 					@Override
 					public void run() {
 						progressView.setProgress(newProgress);
@@ -151,13 +151,15 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 				@Override
 				public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
 
+					if(url == null) return false;
+
 					if(url.startsWith("data:")) {
 						// Prevent imgur bug where we're directed to some random data URI
 						return true;
 					}
 
 					// Go back if loading same page to prevent redirect loops.
-					if(goingBack && currentUrl != null && url != null && url.equals(currentUrl)) {
+					if(goingBack && currentUrl != null && url.equals(currentUrl)) {
 
 						General.quickToast(context,
 								String.format("Handling redirect loop (level %d)", -lastBackDepthAttempt), Toast.LENGTH_SHORT);
@@ -167,12 +169,12 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 						if (webView.canGoBackOrForward(lastBackDepthAttempt)) {
 							webView.goBackOrForward(lastBackDepthAttempt);
 						} else {
-							getSupportActivity().finish();
+							getActivity().finish();
 						}
 					} else  {
 
 						if(RedditURLParser.parse(Uri.parse(url)) != null) {
-							LinkHandler.onLinkClicked(getSupportActivity(), url, false);
+							LinkHandler.onLinkClicked(getActivity(), url, false);
 						} else {
 							webView.loadUrl(url);
 							currentUrl = url;
@@ -185,7 +187,7 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 				@Override
 				public void onPageStarted(WebView view, String url, Bitmap favicon) {
 					super.onPageStarted(view, url, favicon);
-					getSupportActivity().setTitle(url);
+					getActivity().setTitle(url);
 				}
 
 				@Override
@@ -196,7 +198,7 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 						@Override
 						public void run() {
 
-							General.UI_THREAD_HANDLER.post(new Runnable() {
+							AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 								public void run() {
 
 									if(currentUrl == null || url == null) return;
@@ -213,7 +215,7 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 										if(webView.canGoBackOrForward(lastBackDepthAttempt)) {
 											webView.goBackOrForward(lastBackDepthAttempt);
 										} else {
-											getSupportActivity().finish();
+											getActivity().finish();
 										}
 
 									} else {
@@ -232,7 +234,7 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 			});
 
 		} else {
-			webView.loadData(html, "text/html", "UTF-8");
+			webView.loadData(html, "text/html; charset=UTF-8", null);
 		}
 
 		final FrameLayout outerFrame = new FrameLayout(context);
@@ -246,7 +248,7 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 
 				public boolean onSwipe(BezelSwipeOverlay.SwipeEdge edge) {
 
-					toolbarOverlay.setContents(post.generateToolbar(getSupportActivity(), false, toolbarOverlay));
+					toolbarOverlay.setContents(post.generateToolbar(getActivity(), false, toolbarOverlay));
 					toolbarOverlay.show(edge == BezelSwipeOverlay.SwipeEdge.LEFT ?
 							SideToolbarOverlay.SideToolbarPosition.LEFT : SideToolbarOverlay.SideToolbarPosition.RIGHT);
 					return true;
@@ -305,11 +307,11 @@ public class WebViewFragment extends Fragment implements RedditPostView.PostSele
 	}
 
 	public void onPostSelected(final RedditPreparedPost post) {
-		((RedditPostView.PostSelectionListener)getSupportActivity()).onPostSelected(post);
+		((RedditPostView.PostSelectionListener)getActivity()).onPostSelected(post);
 	}
 
 	public void onPostCommentsSelected(final RedditPreparedPost post) {
-		((RedditPostView.PostSelectionListener)getSupportActivity()).onPostCommentsSelected(post);
+		((RedditPostView.PostSelectionListener)getActivity()).onPostCommentsSelected(post);
 	}
 
     public String getCurrentUrl() {

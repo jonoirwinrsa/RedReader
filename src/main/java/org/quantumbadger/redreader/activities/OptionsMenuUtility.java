@@ -17,18 +17,18 @@
 
 package org.quantumbadger.redreader.activities;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.SubMenu;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.preference.PreferenceManager;
-import org.holoeverywhere.preference.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.common.BetterSSB;
 import org.quantumbadger.redreader.common.PrefsUtility;
@@ -39,11 +39,18 @@ import org.quantumbadger.redreader.reddit.api.RedditSubredditSubscriptionManager
 import org.quantumbadger.redreader.reddit.url.PostCommentListingURL;
 import org.quantumbadger.redreader.settings.SettingsActivity;
 
+import java.util.EnumSet;
+
 public final class OptionsMenuUtility {
+
+	public enum OptionsMenuItemsPref {
+		ACCOUNTS, THEME, CLOSE_ALL, PAST, SUBMIT_POST, SEARCH, REPLY
+	}
 
 	private static enum Option {
 		ACCOUNTS,
 		SETTINGS,
+		CLOSE_ALL,
 		SUBMIT_POST,
 		SEARCH,
 		REFRESH_SUBREDDITS,
@@ -59,7 +66,7 @@ public final class OptionsMenuUtility {
 		SIDEBAR
 	}
 
-	public static <E extends Activity & OptionsMenuListener> void prepare(
+	public static <E extends BaseActivity & OptionsMenuListener> void prepare(
 			final E activity, final Menu menu,
 			final boolean subredditsVisible, final boolean postsVisible, final boolean commentsVisible,
 			final boolean areSearchResults,
@@ -67,6 +74,9 @@ public final class OptionsMenuUtility {
 			final RedditSubredditSubscriptionManager.SubredditSubscriptionState subredditSubscriptionState,
 			final boolean subredditHasSidebar,
 			final boolean pastCommentsSupported) {
+
+		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
+		final EnumSet<OptionsMenuItemsPref> optionsMenuItemsPrefs = PrefsUtility.pref_menus_optionsmenu_items(activity, preferences);
 
 		if(subredditsVisible && !postsVisible && !commentsVisible) {
 			add(activity, menu, Option.REFRESH_SUBREDDITS, false);
@@ -79,9 +89,9 @@ public final class OptionsMenuUtility {
 					addAllPostSorts(activity, menu, true);
 			}
 			add(activity, menu, Option.REFRESH_POSTS, false);
-			add(activity, menu, Option.PAST_POSTS, false);
-			add(activity, menu, Option.SUBMIT_POST, false);
-			add(activity, menu, Option.SEARCH, false);
+			if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.PAST)) add(activity, menu, Option.PAST_POSTS, false);
+			if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.SUBMIT_POST)) add(activity, menu, Option.SUBMIT_POST, false);
+			if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.SEARCH)) add(activity, menu, Option.SEARCH, false);
 			if(subredditSubscriptionState != null) {
 				addSubscriptionItem(activity, menu, subredditSubscriptionState);
 				if(subredditHasSidebar) add(activity, menu, Option.SIDEBAR, false);
@@ -91,7 +101,7 @@ public final class OptionsMenuUtility {
 			if(commentsSortable) addAllCommentSorts(activity, menu, true);
 			add(activity, menu, Option.REFRESH_COMMENTS, false);
 			if(pastCommentsSupported) {
-				add(activity, menu, Option.PAST_COMMENTS, false);
+				if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.PAST)) add(activity, menu, Option.PAST_COMMENTS, false);
 			}
 
 		} else {
@@ -110,10 +120,12 @@ public final class OptionsMenuUtility {
 				}
 				if(commentsSortable) addAllCommentSorts(activity, sortMenu, false);
 
-				final SubMenu pastMenu = menu.addSubMenu(R.string.options_past);
-				add(activity, pastMenu, Option.PAST_POSTS, true);
-				if(pastCommentsSupported) {
-					add(activity, pastMenu, Option.PAST_COMMENTS, true);
+				if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.PAST)) {
+					final SubMenu pastMenu = menu.addSubMenu(R.string.options_past);
+					add(activity, pastMenu, Option.PAST_POSTS, true);
+					if(pastCommentsSupported) {
+						add(activity, pastMenu, Option.PAST_COMMENTS, true);
+					}
 				}
 
 			} else if(postsVisible) {
@@ -133,8 +145,8 @@ public final class OptionsMenuUtility {
 			if(subredditsVisible) add(activity, refreshMenu, Option.REFRESH_SUBREDDITS, true);
 			if(postsVisible) {
 				add(activity, refreshMenu, Option.REFRESH_POSTS, true);
-				add(activity, menu, Option.SUBMIT_POST, false);
-				add(activity, menu, Option.SEARCH, false);
+				if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.SUBMIT_POST)) add(activity, menu, Option.SUBMIT_POST, false);
+				if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.SEARCH)) add(activity, menu, Option.SEARCH, false);
 				if(subredditSubscriptionState != null) {
 					addSubscriptionItem(activity, menu, subredditSubscriptionState);
 					if(subredditHasSidebar) add(activity, menu, Option.SIDEBAR, false);
@@ -143,12 +155,13 @@ public final class OptionsMenuUtility {
 			if(commentsVisible) add(activity, refreshMenu, Option.REFRESH_COMMENTS, true);
 		}
 
-		add(activity, menu, Option.ACCOUNTS, false);
-		add(activity, menu, Option.THEMES, false);
+		if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.ACCOUNTS)) add(activity, menu, Option.ACCOUNTS, false);
+		if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.THEME)) add(activity, menu, Option.THEMES, false);
 		add(activity, menu, Option.SETTINGS, false);
+		if(optionsMenuItemsPrefs.contains(OptionsMenuItemsPref.CLOSE_ALL)) add(activity, menu, Option.CLOSE_ALL, false);
 	}
 
-	private static void addSubscriptionItem(final Activity activity, final Menu menu,
+	private static void addSubscriptionItem(final BaseActivity activity, final Menu menu,
 			final RedditSubredditSubscriptionManager.SubredditSubscriptionState subredditSubscriptionState) {
 
 		if(subredditSubscriptionState == null) return;
@@ -172,14 +185,14 @@ public final class OptionsMenuUtility {
 
 	}
 
-	private static void add(final Activity activity, final Menu menu, final Option option, final boolean longText) {
+	private static void add(final BaseActivity activity, final Menu menu, final Option option, final boolean longText) {
 
 		switch(option) {
 
 			case ACCOUNTS:
 				menu.add(activity.getString(R.string.options_accounts)).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 					public boolean onMenuItemClick(final MenuItem item) {
-						new AccountListDialog().show(activity);
+						new AccountListDialog().show(activity.getFragmentManager(), null);
 						return true;
 					}
 				});
@@ -193,6 +206,17 @@ public final class OptionsMenuUtility {
 						return true;
 					}
 				});
+				break;
+
+			case CLOSE_ALL:
+				if(!(activity instanceof MainActivity)) {
+					menu.add(activity.getString(R.string.options_close_all)).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+						public boolean onMenuItemClick(final MenuItem item) {
+							activity.closeAllExceptMain();
+							return true;
+						}
+					});
+				}
 				break;
 
 			case THEMES:
@@ -435,21 +459,21 @@ public final class OptionsMenuUtility {
 		});
 	}
 
-	private static interface OptionsMenuListener {}
+	private interface OptionsMenuListener {}
 
-	public static interface OptionsMenuSubredditsListener extends OptionsMenuListener {
-		public void onRefreshSubreddits();
+	public interface OptionsMenuSubredditsListener extends OptionsMenuListener {
+		void onRefreshSubreddits();
 	}
 
-	public static interface OptionsMenuPostsListener extends OptionsMenuListener {
-		public void onRefreshPosts();
-		public void onPastPosts();
-		public void onSubmitPost();
-		public void onSortSelected(PostListingController.Sort order);
-		public void onSearchPosts();
-		public void onSubscribe();
-		public void onUnsubscribe();
-		public void onSidebar();
+	public interface OptionsMenuPostsListener extends OptionsMenuListener {
+		void onRefreshPosts();
+		void onPastPosts();
+		void onSubmitPost();
+		void onSortSelected(PostListingController.Sort order);
+		void onSearchPosts();
+		void onSubscribe();
+		void onUnsubscribe();
+		void onSidebar();
 	}
 
 	public static interface OptionsMenuCommentsListener extends OptionsMenuListener {
@@ -461,10 +485,10 @@ public final class OptionsMenuUtility {
 	public static void fixActionBar(final Activity activity, final String title) {
 		final TypedArray attr = activity.obtainStyledAttributes(new int[] {R.attr.rrActionBarCol});
 		final int actionbarCol = attr.getColor(0, 0);
-		activity.getSupportActionBar().setBackgroundDrawable(new ColorDrawable(actionbarCol));
+		activity.getActionBar().setBackgroundDrawable(new ColorDrawable(actionbarCol));
 
 		final BetterSSB sb = new BetterSSB();
 		sb.append(title, BetterSSB.FOREGROUND_COLOR, Color.WHITE, 0, 1f);
-		activity.getSupportActionBar().setTitle(sb.get());
+		activity.getActionBar().setTitle(sb.get());
 	}
 }

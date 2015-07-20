@@ -17,6 +17,8 @@
 
 package org.quantumbadger.redreader.reddit.prepared;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,6 +28,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.util.Log;
@@ -33,9 +36,6 @@ import android.view.View;
 import android.widget.Toast;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.preference.PreferenceManager;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
@@ -169,6 +169,8 @@ public final class RedditPreparedPost {
 	public static void showActionMenu(final Activity activity, final RedditPreparedPost post) {
 
 		final EnumSet<Action> itemPref = PrefsUtility.pref_menus_post_context_items(activity, PreferenceManager.getDefaultSharedPreferences(activity));
+
+		if(itemPref.isEmpty()) return;
 
 		final ArrayList<RPVMenuItem> menu = new ArrayList<RPVMenuItem>();
 
@@ -443,7 +445,7 @@ public final class RedditPreparedPost {
 				break;
 
 			case PROPERTIES:
-				PostPropertiesDialog.newInstance(post.src).show(activity);
+				PostPropertiesDialog.newInstance(post.src).show(activity.getFragmentManager(), null);
 				break;
 
 			case COMMENTS:
@@ -666,7 +668,7 @@ public final class RedditPreparedPost {
 	}
 
 	public void refreshView(final Context context) {
-		General.UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
 				rebuildSubtitle(context);
 				if(boundView != null) {
@@ -682,7 +684,7 @@ public final class RedditPreparedPost {
 
 		if(RedditAccountManager.getInstance(activity).getDefaultAccount().isAnonymous()) {
 
-			General.UI_THREAD_HANDLER.post(new Runnable() {
+			AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 				public void run() {
 					Toast.makeText(activity, "You must be logged in to do that.", Toast.LENGTH_SHORT).show();
 				}
@@ -694,9 +696,21 @@ public final class RedditPreparedPost {
 		final int lastVoteDirection = voteDirection;
 
 		switch(action) {
-			case DOWNVOTE: voteDirection = -1; break;
-			case UNVOTE: voteDirection = 0; break;
-			case UPVOTE: voteDirection = 1; break;
+			case DOWNVOTE:
+				if(!src.archived) {
+					voteDirection = -1;
+				}
+				break;
+			case UNVOTE:
+				if(!src.archived) {
+					voteDirection = 0;
+				}
+				break;
+			case UPVOTE:
+				if(!src.archived) {
+					voteDirection = 1;
+				}
+				break;
 
 			case SAVE: saved = true; break;
 			case UNSAVE: saved = false; break;
@@ -711,6 +725,16 @@ public final class RedditPreparedPost {
 		}
 
 		refreshView(activity);
+
+		boolean vote = (action == RedditAPI.RedditAction.DOWNVOTE
+				| action == RedditAPI.RedditAction.UPVOTE
+				| action == RedditAPI.RedditAction.UNVOTE);
+
+		if(src.archived && vote){
+			Toast.makeText(activity, R.string.error_archived_vote, Toast.LENGTH_SHORT)
+					.show();
+			return;
+		}
 
 		final RedditAccount user = RedditAccountManager.getInstance(activity).getDefaultAccount();
 
@@ -728,7 +752,7 @@ public final class RedditPreparedPost {
 
 						final RRError error = General.getGeneralErrorForFailure(context, type, t, status,
 								"Reddit API action: " + action.toString() + " " + url);
-						General.UI_THREAD_HANDLER.post(new Runnable() {
+						AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 							public void run() {
 								General.showResultDialog(activity, error);
 							}
@@ -740,7 +764,7 @@ public final class RedditPreparedPost {
 						revertOnFailure();
 
 						final RRError error = General.getGeneralErrorForFailure(context, type);
-						General.UI_THREAD_HANDLER.post(new Runnable() {
+						AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 							public void run() {
 								General.showResultDialog(activity, error);
 							}

@@ -19,15 +19,14 @@ package org.quantumbadger.redreader.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
-import com.actionbarsherlock.view.MenuItem;
-import org.holoeverywhere.app.Activity;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.fragments.WebViewFragment;
 
-public class HtmlViewActivity extends Activity {
+public class HtmlViewActivity extends BaseActivity {
 
 	private WebViewFragment webView;
 
@@ -35,8 +34,8 @@ public class HtmlViewActivity extends Activity {
 
 		PrefsUtility.applyTheme(this);
 
-		getSupportActionBar().setHomeButtonEnabled(true);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 		super.onCreate(savedInstanceState);
 
@@ -54,7 +53,7 @@ public class HtmlViewActivity extends Activity {
 
 		setContentView(View.inflate(this, R.layout.main_single, null));
 
-		getSupportFragmentManager().beginTransaction().add(R.id.main_single_frame, webView).commit();
+		getFragmentManager().beginTransaction().add(R.id.main_single_frame, webView).commit();
 	}
 
 	@Override

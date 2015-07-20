@@ -18,27 +18,22 @@
 package org.quantumbadger.redreader.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.VideoView;
+import android.widget.*;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.preference.PreferenceManager;
-import org.holoeverywhere.preference.SharedPreferences;
-import org.holoeverywhere.widget.FrameLayout;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ProgressBar;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.cache.CacheManager;
@@ -65,7 +60,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.UUID;
 
-public class ImageViewActivity extends Activity implements RedditPostView.PostSelectionListener, ImageViewDisplayListManager.Listener {
+public class ImageViewActivity extends BaseActivity implements RedditPostView.PostSelectionListener, ImageViewDisplayListManager.Listener {
 
 	GLSurfaceView surfaceView;
 	private ImageView imageView;
@@ -134,7 +129,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 
 					@Override
 					protected void onDownloadNecessary() {
-						General.UI_THREAD_HANDLER.post(new Runnable() {
+						AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 							@Override
 							public void run() {
 								progressBar.setVisibility(View.VISIBLE);
@@ -151,7 +146,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 
 						final RRError error = General.getGeneralErrorForFailure(context, type, t, status, url.toString());
 
-						General.UI_THREAD_HANDLER.post(new Runnable() {
+						AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 							public void run() {
 								// TODO handle properly
 								mRequest = null;
@@ -163,7 +158,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 
 					@Override
 					protected void onProgress(final boolean authorizationInProgress, final long bytesRead, final long totalBytes) {
-						General.UI_THREAD_HANDLER.post(new Runnable() {
+						AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 							@Override
 							public void run() {
 								progressBar.setVisibility(View.VISIBLE);
@@ -196,7 +191,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 
 						if(Constants.Mime.isVideo(mimetype)) {
 
-							General.UI_THREAD_HANDLER.post(new Runnable() {
+							AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 								public void run() {
 
 									if(mIsDestroyed) return;
@@ -254,9 +249,28 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 
 						} else if(Constants.Mime.isImageGif(mimetype)) {
 
-							if(AndroidApi.isIceCreamSandwichOrLater()) {
+							final PrefsUtility.GifViewMode gifViewMode = PrefsUtility.pref_behaviour_gifview_mode(context, sharedPreferences);
 
-								General.UI_THREAD_HANDLER.post(new Runnable() {
+							if(gifViewMode == PrefsUtility.GifViewMode.INTERNAL_BROWSER) {
+								revertToWeb();
+								return;
+
+							} else if(gifViewMode == PrefsUtility.GifViewMode.EXTERNAL_BROWSER) {
+								AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
+									@Override
+									public void run() {
+										LinkHandler.openWebBrowser(ImageViewActivity.this, Uri.parse(mUrl.toString()));
+										finish();
+									}
+								});
+
+								return;
+							}
+
+							if(AndroidApi.isIceCreamSandwichOrLater()
+									&& gifViewMode == PrefsUtility.GifViewMode.INTERNAL_MOVIE) {
+
+								AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 									public void run() {
 
 										if(mIsDestroyed) return;
@@ -287,7 +301,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 								gifThread = new GifDecoderThread(cacheFileInputStream, new GifDecoderThread.OnGifLoadedListener() {
 
 									public void onGifLoaded() {
-										General.UI_THREAD_HANDLER.post(new Runnable() {
+										AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 											public void run() {
 
 												if(mIsDestroyed) return;
@@ -352,7 +366,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 								return;
 							}
 
-							General.UI_THREAD_HANDLER.post(new Runnable() {
+							AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 								public void run() {
 
 									if(mIsDestroyed) return;
@@ -452,7 +466,7 @@ public class ImageViewActivity extends Activity implements RedditPostView.PostSe
 		if(General.isThisUIThread()) {
 			r.run();
 		} else {
-			General.UI_THREAD_HANDLER.post(r);
+			AndroidApi.UI_THREAD_HANDLER.post(r);
 		}
 	}
 

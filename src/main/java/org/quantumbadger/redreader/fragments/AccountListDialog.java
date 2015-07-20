@@ -17,6 +17,10 @@
 
 package org.quantumbadger.redreader.fragments;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,17 +29,14 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.app.Dialog;
-import org.holoeverywhere.app.DialogFragment;
-import org.holoeverywhere.app.ProgressDialog;
-import org.holoeverywhere.widget.ListView;
+import android.widget.ListView;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountChangeListener;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.activities.OAuthLoginActivity;
 import org.quantumbadger.redreader.adapters.AccountListAdapter;
+import org.quantumbadger.redreader.common.AndroidApi;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.RRError;
 import org.quantumbadger.redreader.reddit.api.RedditOAuth;
@@ -55,7 +56,7 @@ public class AccountListDialog extends DialogFragment
 
 		if(requestCode == 123 && requestCode == resultCode && data.hasExtra("url")) {
 
-			final ProgressDialog progressDialog = new ProgressDialog(getSupportActivity());
+			final ProgressDialog progressDialog = new ProgressDialog(getActivity());
 			progressDialog.setTitle(R.string.accounts_loggingin);
 			progressDialog.setMessage(getString(R.string.accounts_loggingin_msg));
 			progressDialog.setIndeterminate(true);
@@ -86,24 +87,24 @@ public class AccountListDialog extends DialogFragment
 			progressDialog.show();
 
 			RedditOAuth.loginAsynchronous(
-					getSupportActivity().getApplicationContext(),
+					getActivity().getApplicationContext(),
 					Uri.parse(data.getStringExtra("url")),
 
 					new RedditOAuth.LoginListener() {
 						@Override
 						public void onLoginSuccess(final RedditAccount account) {
-							General.UI_THREAD_HANDLER.post(new Runnable() {
+							AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 								@Override
 								public void run() {
 									progressDialog.dismiss();
 									if(cancelled.get()) return;
 
-									final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getSupportActivity());
+									final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getActivity());
 									alertBuilder.setNeutralButton(R.string.dialog_close, new DialogInterface.OnClickListener() {
 										public void onClick(DialogInterface dialog, int which) {}
 									});
 
-									final Context context = getSupportActivity().getApplicationContext();
+									final Context context = getActivity().getApplicationContext();
 									alertBuilder.setTitle(context.getString(R.string.general_success));
 									alertBuilder.setMessage(context.getString(R.string.message_nowloggedin));
 
@@ -115,12 +116,12 @@ public class AccountListDialog extends DialogFragment
 
 						@Override
 						public void onLoginFailure(final RedditOAuth.LoginError error, final RRError details) {
-							General.UI_THREAD_HANDLER.post(new Runnable() {
+							AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 								@Override
 								public void run() {
 									progressDialog.dismiss();
 									if(cancelled.get()) return;
-									General.showResultDialog(getSupportActivity(), details);
+									General.showResultDialog(getActivity(), details);
 								}
 							});
 						}
@@ -136,7 +137,7 @@ public class AccountListDialog extends DialogFragment
 		if(alreadyCreated) return getDialog();
 		alreadyCreated = true;
 
-		final Context context = getSupportActivity();
+		final Context context = getActivity();
 
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(context.getString(R.string.options_accounts_long));
@@ -205,15 +206,15 @@ public class AccountListDialog extends DialogFragment
 			}
 		});
 
-		builder.setNeutralButton(getSupportActivity().getString(R.string.dialog_close), null);
+		builder.setNeutralButton(getActivity().getString(R.string.dialog_close), null);
 
 		return builder.create();
 	}
 
 	public void onRedditAccountChanged() {
-		General.UI_THREAD_HANDLER.post(new Runnable() {
+		AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 			public void run() {
-				lv.setAdapter(new AccountListAdapter(getSupportActivity()));
+				lv.setAdapter(new AccountListAdapter(getActivity()));
 			}
 		});
 	}

@@ -15,36 +15,43 @@
  * along with RedReader.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-package org.quantumbadger.redreader.settings;
+package org.quantumbadger.redreader.activities;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.view.MenuItem;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.common.PrefsUtility;
 
-import java.util.List;
-
-public final class SettingsActivity
-		extends PreferenceActivity
-		implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class BaseActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
 	private SharedPreferences sharedPreferences;
 
+	private static boolean closingAll = false;
+
+	public void closeAllExceptMain() {
+		closingAll = true;
+		closeIfNecessary();
+	}
+
 	@Override
-	protected void onCreate(final Bundle savedInstanceState) {
-		PrefsUtility.applyTheme(this);
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 		setOrientationFromPrefs();
-
-		getActionBar().setHomeButtonEnabled(true);
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+		closeIfNecessary();
 	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		setOrientationFromPrefs();
+		closeIfNecessary();
+	}
+
 
 	@Override
 	protected void onDestroy() {
@@ -52,19 +59,13 @@ public final class SettingsActivity
 		sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
 	}
 
-	@Override
-	public void onBuildHeaders(final List<Header> target) {
-		loadHeadersFromResource(R.xml.prefheaders, target);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(final MenuItem item) {
-		switch(item.getItemId()) {
-			case android.R.id.home:
+	private void closeIfNecessary() {
+		if(closingAll) {
+			if(this instanceof MainActivity) {
+				closingAll = false;
+			} else {
 				finish();
-				return true;
-			default:
-				return false;
+			}
 		}
 	}
 
@@ -78,11 +79,20 @@ public final class SettingsActivity
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 	}
 
-	@Override
-	public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
+	protected void onSharedPreferenceChangedInner(final SharedPreferences prefs, final String key) {
+		// Do nothing
+	}
 
-		if(key.equals(getString(R.string.pref_behaviour_screenorientation_key))) {
-			setOrientationFromPrefs();
+	@Override
+	public final void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
+
+		onSharedPreferenceChangedInner(prefs, key);
+
+		if(key.equals(getString(R.string.pref_network_https_key))) {
+			PrefsUtility.network_https(this, prefs);
+
+		} else if(key.equals(getString(R.string.pref_menus_optionsmenu_items_key))) {
+			invalidateOptionsMenu();
 		}
 	}
 }

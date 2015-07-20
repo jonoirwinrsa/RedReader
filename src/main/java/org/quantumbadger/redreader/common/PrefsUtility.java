@@ -17,13 +17,14 @@
 
 package org.quantumbadger.redreader.common;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.preference.PreferenceManager;
-import org.holoeverywhere.preference.SharedPreferences;
 import org.quantumbadger.redreader.R;
+import org.quantumbadger.redreader.activities.OptionsMenuUtility;
 import org.quantumbadger.redreader.fragments.MainMenuFragment;
 import org.quantumbadger.redreader.reddit.prepared.RedditPreparedPost;
 import org.quantumbadger.redreader.reddit.url.PostCommentListingURL;
@@ -72,7 +73,8 @@ public final class PrefsUtility {
 	public static boolean isRestartRequired(Context context, String key) {
 		return context.getString(R.string.pref_appearance_theme_key).equals(key)
 				|| context.getString(R.string.pref_appearance_solidblack_2_key).equals(key)
-				|| context.getString(R.string.pref_appearance_langforce_key).equals(key);
+				|| context.getString(R.string.pref_appearance_langforce_key).equals(key)
+				|| context.getString(R.string.pref_behaviour_bezel_toolbar_swipezone_key).equals(key);
 	}
 
 	///////////////////////////////
@@ -86,7 +88,7 @@ public final class PrefsUtility {
 	}
 
 	public static AppearanceTwopane appearance_twopane(final Context context, final SharedPreferences sharedPreferences) {
-		return AppearanceTwopane.valueOf(getString(R.string.pref_appearance_twopane_key, "auto", context, sharedPreferences).toUpperCase());
+		return AppearanceTwopane.valueOf(General.asciiUppercase(getString(R.string.pref_appearance_twopane_key, "auto", context, sharedPreferences)));
 	}
 
 	public static enum AppearanceTheme {
@@ -98,7 +100,7 @@ public final class PrefsUtility {
 	}
 
 	public static AppearanceTheme appearance_theme(final Context context, final SharedPreferences sharedPreferences) {
-		return AppearanceTheme.valueOf(getString(R.string.pref_appearance_theme_key, "red", context, sharedPreferences).toUpperCase());
+		return AppearanceTheme.valueOf(General.asciiUppercase(getString(R.string.pref_appearance_theme_key, "red", context, sharedPreferences)));
 	}
 
 	public static void applyTheme(Activity activity) {
@@ -218,6 +220,10 @@ public final class PrefsUtility {
 	// pref_behaviour
 	///////////////////////////////
 
+	public static boolean pref_behaviour_skiptofrontpage(final Context context, final SharedPreferences sharedPreferences) {
+		return getBoolean(R.string.pref_behaviour_skiptofrontpage_key, false, context, sharedPreferences);
+	}
+
 	public static boolean pref_behaviour_useinternalbrowser(final Context context, final SharedPreferences sharedPreferences) {
 		return getBoolean(R.string.pref_behaviour_useinternalbrowser_key, true, context, sharedPreferences);
 	}
@@ -226,18 +232,39 @@ public final class PrefsUtility {
         return getBoolean(R.string.pref_behaviour_notifications_key, true, context, sharedPreferences);
     }
 
+	public static int pref_behaviour_bezel_toolbar_swipezone_dp(final Context context, final SharedPreferences sharedPreferences) {
+		try {
+			return Integer.parseInt(getString(R.string.pref_behaviour_bezel_toolbar_swipezone_key, "10", context, sharedPreferences));
+		} catch(Throwable _) {
+			return 10;
+		}
+	}
+
+	// pref_behaviour_gifview_mode
+
+	public enum GifViewMode {
+		INTERNAL_MOVIE,
+		INTERNAL_LEGACY,
+		INTERNAL_BROWSER,
+		EXTERNAL_BROWSER
+	}
+
+	public static GifViewMode pref_behaviour_gifview_mode(final Context context, final SharedPreferences sharedPreferences) {
+		return GifViewMode.valueOf(General.asciiUppercase(getString(R.string.pref_behaviour_gifview_mode_key, "internal_movie", context, sharedPreferences)));
+	}
+
 	// pref_behaviour_fling_post
 
-	public static enum PostFlingAction {
+	public enum PostFlingAction {
 		UPVOTE, DOWNVOTE, SAVE, HIDE, COMMENTS, LINK, ACTION_MENU, BROWSER, DISABLED
 	}
 
 	public static PostFlingAction pref_behaviour_fling_post_left(final Context context, final SharedPreferences sharedPreferences) {
-		return PostFlingAction.valueOf(getString(R.string.pref_behaviour_fling_post_left_key, "downvote", context, sharedPreferences).toUpperCase());
+		return PostFlingAction.valueOf(General.asciiUppercase(getString(R.string.pref_behaviour_fling_post_left_key, "downvote", context, sharedPreferences)));
 	}
 
 	public static PostFlingAction pref_behaviour_fling_post_right(final Context context, final SharedPreferences sharedPreferences) {
-		return PostFlingAction.valueOf(getString(R.string.pref_behaviour_fling_post_right_key, "upvote", context, sharedPreferences).toUpperCase());
+		return PostFlingAction.valueOf(General.asciiUppercase(getString(R.string.pref_behaviour_fling_post_right_key, "upvote", context, sharedPreferences)));
 	}
 
 	public static enum CommentAction {
@@ -245,11 +272,11 @@ public final class PrefsUtility {
 	}
 
 	public static CommentAction pref_behaviour_actions_comment_tap(final Context context, final SharedPreferences sharedPreferences) {
-		return CommentAction.valueOf(getString(R.string.pref_behaviour_actions_comment_tap_key, "action_menu", context, sharedPreferences).toUpperCase());
+		return CommentAction.valueOf(General.asciiUppercase(getString(R.string.pref_behaviour_actions_comment_tap_key, "action_menu", context, sharedPreferences)));
 	}
 
 	public static PostCommentListingURL.Sort pref_behaviour_commentsort(final Context context, final SharedPreferences sharedPreferences) {
-		return PostCommentListingURL.Sort.valueOf(getString(R.string.pref_behaviour_commentsort_key, "best", context, sharedPreferences).toUpperCase());
+		return PostCommentListingURL.Sort.valueOf(General.asciiUppercase(getString(R.string.pref_behaviour_commentsort_key, "best", context, sharedPreferences)));
 	}
 
 	public static boolean pref_behaviour_nsfw(final Context context, final SharedPreferences sharedPreferences) {
@@ -262,6 +289,14 @@ public final class PrefsUtility {
 
 	public static PostCount pref_behaviour_post_count(final Context context, final SharedPreferences sharedPreferences) {
 		return PostCount.valueOf(getString(R.string.pref_behaviour_postcount_key, "ALL", context, sharedPreferences));
+	}
+
+	public static enum ScreenOrientation {
+		AUTO, PORTRAIT, LANDSCAPE
+	}
+
+	public static ScreenOrientation pref_behaviour_screen_orientation(final Context context, final SharedPreferences sharedPreferences) {
+		return ScreenOrientation.valueOf(General.asciiUppercase(getString(R.string.pref_behaviour_screenorientation_key, ScreenOrientation.AUTO.name(), context, sharedPreferences)));
 	}
 
 	///////////////////////////////
@@ -328,7 +363,7 @@ public final class PrefsUtility {
 		final Set<String> strings = getStringSet(R.string.pref_menus_post_context_items_key, R.array.pref_menus_post_context_items_return, context, sharedPreferences);
 
 		final EnumSet<RedditPreparedPost.Action> result = EnumSet.noneOf(RedditPreparedPost.Action.class);
-		for(String s : strings) result.add(RedditPreparedPost.Action.valueOf(s.toUpperCase()));
+		for(String s : strings) result.add(RedditPreparedPost.Action.valueOf(General.asciiUppercase(s)));
 
 		return result;
 	}
@@ -338,7 +373,7 @@ public final class PrefsUtility {
 		final Set<String> strings = getStringSet(R.string.pref_menus_post_toolbar_items_key, R.array.pref_menus_post_toolbar_items_return, context, sharedPreferences);
 
 		final EnumSet<RedditPreparedPost.Action> result = EnumSet.noneOf(RedditPreparedPost.Action.class);
-		for(String s : strings) result.add(RedditPreparedPost.Action.valueOf(s.toUpperCase()));
+		for(String s : strings) result.add(RedditPreparedPost.Action.valueOf(General.asciiUppercase(s)));
 
 		return result;
 	}
@@ -348,7 +383,17 @@ public final class PrefsUtility {
 		final Set<String> strings = getStringSet(R.string.pref_menus_mainmenu_useritems_key, R.array.pref_menus_mainmenu_useritems_items_default, context, sharedPreferences);
 
 		final EnumSet<MainMenuFragment.MainMenuUserItems> result = EnumSet.noneOf(MainMenuFragment.MainMenuUserItems.class);
-		for(String s : strings) result.add(MainMenuFragment.MainMenuUserItems.valueOf(s.toUpperCase()));
+		for(String s : strings) result.add(MainMenuFragment.MainMenuUserItems.valueOf(General.asciiUppercase(s)));
+
+		return result;
+	}
+
+	public static EnumSet<OptionsMenuUtility.OptionsMenuItemsPref> pref_menus_optionsmenu_items(final Context context, final SharedPreferences sharedPreferences) {
+
+		final Set<String> strings = getStringSet(R.string.pref_menus_optionsmenu_items_key, R.array.pref_menus_optionsmenu_items_items_default, context, sharedPreferences);
+
+		final EnumSet<OptionsMenuUtility.OptionsMenuItemsPref> result = EnumSet.noneOf(OptionsMenuUtility.OptionsMenuItemsPref.class);
+		for(String s : strings) result.add(OptionsMenuUtility.OptionsMenuItemsPref.valueOf(General.asciiUppercase(s)));
 
 		return result;
 	}

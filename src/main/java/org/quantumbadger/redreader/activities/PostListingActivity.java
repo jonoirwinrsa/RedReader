@@ -18,20 +18,18 @@
 package org.quantumbadger.redreader.activities;
 
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.WindowManager;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.preference.PreferenceManager;
-import org.holoeverywhere.preference.SharedPreferences;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.LinearLayout;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountChangeListener;
@@ -55,7 +53,6 @@ import java.util.UUID;
 public class PostListingActivity extends RefreshableActivity
 		implements RedditAccountChangeListener,
 		RedditPostView.PostSelectionListener,
-		SharedPreferences.OnSharedPreferenceChangeListener,
 		OptionsMenuUtility.OptionsMenuPostsListener,
 		SessionChangeListener,
 		RedditSubredditSubscriptionManager.SubredditSubscriptionStateChangeListener {
@@ -63,21 +60,16 @@ public class PostListingActivity extends RefreshableActivity
 	private PostListingFragment fragment;
 	private PostListingController controller;
 
-	private SharedPreferences sharedPreferences;
-
 	public void onCreate(final Bundle savedInstanceState) {
 
 		PrefsUtility.applyTheme(this);
 
 		// TODO load from savedInstanceState
 
-		getSupportActionBar().setHomeButtonEnabled(true);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        getWindow().setBackgroundDrawable(new ColorDrawable(getSupportActionBarContext().obtainStyledAttributes(new int[] {R.attr.rrListBackgroundCol}).getColor(0,0)));
-
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        getWindow().setBackgroundDrawable(new ColorDrawable(obtainStyledAttributes(new int[] {R.attr.rrListBackgroundCol}).getColor(0,0)));
 
 		RedditAccountManager.getInstance(this).addUpdateListener(this);
 
@@ -168,7 +160,7 @@ public class PostListingActivity extends RefreshableActivity
 	protected void doRefresh(final RefreshableFragment which, final boolean force) {
 		if(fragment != null) fragment.cancel();
 		fragment = controller.get(force);
-		final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		final FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.replace(R.id.main_single_frame, fragment, "post_listing_fragment");
 		transaction.commit();
 	}
@@ -188,7 +180,7 @@ public class PostListingActivity extends RefreshableActivity
 
 	public void onPastPosts() {
 		final SessionListDialog sessionListDialog = SessionListDialog.newInstance(controller.getUri(), controller.getSession(), SessionChangeType.POSTS);
-		sessionListDialog.show(this);
+		sessionListDialog.show(getFragmentManager(), "SessionListDialog");
 	}
 
 	public void onSubmitPost() {
@@ -212,7 +204,7 @@ public class PostListingActivity extends RefreshableActivity
 	public static void onSearchPosts(final PostListingController controller, final Activity activity) {
 
 		final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(activity);
-		final LinearLayout layout = (LinearLayout) activity.getLayoutInflater().inflate(R.layout.dialog_editbox);
+		final LinearLayout layout = (LinearLayout) activity.getLayoutInflater().inflate(R.layout.dialog_editbox, null);
 		final EditText editText = (EditText)layout.findViewById(R.id.dialog_editbox_edittext);
 
 		editText.requestFocus();
@@ -264,23 +256,6 @@ public class PostListingActivity extends RefreshableActivity
 				getString(R.string.sidebar_activity_title),
 				fragment.getSubreddit().url));
 		startActivityForResult(intent, 1);
-	}
-
-	public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
-
-		if(PrefsUtility.isRestartRequired(this, key)) {
-			requestRefresh(RefreshableFragment.RESTART, false);
-		}
-
-		if(PrefsUtility.isRefreshRequired(this, key)) {
-			requestRefresh(RefreshableFragment.ALL, false);
-		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
 	}
 
 	@Override

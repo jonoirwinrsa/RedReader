@@ -17,28 +17,23 @@
 
 package org.quantumbadger.redreader.activities;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ScrollView;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
+import android.widget.*;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.ArrayAdapter;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.ProgressDialog;
-import org.holoeverywhere.widget.AdapterView;
-import org.holoeverywhere.widget.EditText;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.Spinner;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
 import org.quantumbadger.redreader.cache.CacheManager;
 import org.quantumbadger.redreader.cache.RequestFailureType;
+import org.quantumbadger.redreader.common.AndroidApi;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.RRError;
@@ -49,7 +44,7 @@ import org.quantumbadger.redreader.reddit.RedditAPI;
 import java.util.ArrayList;
 
 // TODO save draft as static var (as in comments)
-public class PostSubmitActivity extends Activity {
+public class PostSubmitActivity extends BaseActivity {
 
 	private Spinner typeSpinner, usernameSpinner;
 	private EditText subredditEdit, titleEdit, textEdit;
@@ -63,7 +58,7 @@ public class PostSubmitActivity extends Activity {
 
 		super.onCreate(savedInstanceState);
 
-		final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.post_submit);
+		final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.post_submit, null);
 
 		typeSpinner = (Spinner)layout.findViewById(R.id.post_submit_type);
 		usernameSpinner = (Spinner)layout.findViewById(R.id.post_submit_username);
@@ -170,7 +165,7 @@ public class PostSubmitActivity extends Activity {
 			startActivityForResult(captchaIntent, 0);
 
 		} else if(item.getTitle().equals(getString(R.string.comment_reply_preview))) {
-			MarkdownPreviewDialog.newInstance(textEdit.getText().toString()).show(getSupportFragmentManager());
+			MarkdownPreviewDialog.newInstance(textEdit.getText().toString()).show(getFragmentManager(), null);
 		}
 
 		return true;
@@ -213,7 +208,7 @@ public class PostSubmitActivity extends Activity {
 		final APIResponseHandler.ActionResponseHandler handler = new APIResponseHandler.ActionResponseHandler(this) {
 			@Override
 			protected void onSuccess() {
-				General.UI_THREAD_HANDLER.post(new Runnable() {
+				AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 					public void run() {
 						if(progressDialog.isShowing()) progressDialog.dismiss();
 						General.quickToast(PostSubmitActivity.this, getString(R.string.post_submit_done));
@@ -232,7 +227,7 @@ public class PostSubmitActivity extends Activity {
 
 				final RRError error = General.getGeneralErrorForFailure(context, type, t, status, null);
 
-				General.UI_THREAD_HANDLER.post(new Runnable() {
+				AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 					public void run() {
 						General.showResultDialog(PostSubmitActivity.this, error);
 						if(progressDialog.isShowing()) progressDialog.dismiss();
@@ -245,7 +240,7 @@ public class PostSubmitActivity extends Activity {
 
 				final RRError error = General.getGeneralErrorForFailure(context, type);
 
-				General.UI_THREAD_HANDLER.post(new Runnable() {
+				AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 					public void run() {
 						General.showResultDialog(PostSubmitActivity.this, error);
 						if(progressDialog.isShowing()) progressDialog.dismiss();

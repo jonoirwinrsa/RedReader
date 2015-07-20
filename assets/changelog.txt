@@ -2,7 +2,19 @@
 Switched to oAuth authentication
 Support for some types of video link (e.g. those ending in .webm)
 Workaround for imgur redirect bug
+Added screen orientation preference (thanks to chaitan94)
 Fixed scrolling bug when collapsing large comments (thanks to chaitan94)
+Added preference to skip straight to the front page (thanks to chaitan94)
+Disallow voting on archived posts (thanks to Ciaran Curley)
+Fixed typo in German translation (thanks to Aruee)
+Fixed UTF-8 support in subreddit sidebars
+Added options menu item to close all open activities (hidden by default)
+Added preference to customise options menu
+Post context menu no longer shown if all items are disabled
+Added preference to change bezel toolbar swipe zone size
+Added preference to change GIF viewer
+Removed dependency on HoloEverywhere
+Removed support for Android 2.x and 3.x
 
 62/1.8.7.8
 Ability to mark all inbox messages as read

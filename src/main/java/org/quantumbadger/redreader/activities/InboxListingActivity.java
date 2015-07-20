@@ -18,22 +18,21 @@
 package org.quantumbadger.redreader.activities;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 import org.apache.http.StatusLine;
-import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.preference.PreferenceManager;
-import org.holoeverywhere.preference.SharedPreferences;
-import org.holoeverywhere.widget.LinearLayout;
-import org.holoeverywhere.widget.ListView;
-import org.holoeverywhere.widget.TextView;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccount;
 import org.quantumbadger.redreader.account.RedditAccountManager;
@@ -59,7 +58,7 @@ import java.net.URI;
 import java.util.EnumSet;
 import java.util.UUID;
 
-public final class InboxListingActivity extends Activity {
+public final class InboxListingActivity extends BaseActivity {
 
 	private static final int OPTIONS_MENU_MARK_ALL_AS_READ = 0;
 
@@ -94,8 +93,8 @@ public final class InboxListingActivity extends Activity {
 		final boolean solidblack = PrefsUtility.appearance_solidblack(this, sharedPreferences)
 				&& PrefsUtility.appearance_theme(this, sharedPreferences) == PrefsUtility.AppearanceTheme.NIGHT;
 
-		getSupportActionBar().setHomeButtonEnabled(true);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 		final String title;
 
@@ -194,7 +193,7 @@ public final class InboxListingActivity extends Activity {
 				if(loadingView != null) loadingView.setDone(R.string.download_failed);
 
 				final RRError error = General.getGeneralErrorForFailure(context, type, t, status, url.toString());
-				General.UI_THREAD_HANDLER.post(new Runnable() {
+				AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 					public void run() {
 						notifications.addView(new ErrorView(InboxListingActivity.this, error));
 					}
@@ -218,7 +217,7 @@ public final class InboxListingActivity extends Activity {
 				// TODO pref (currently 10 mins)
 				// TODO xml
 				if(fromCache && RRTime.since(timestamp) > 10 * 60 * 1000) {
-					General.UI_THREAD_HANDLER.post(new Runnable() {
+					AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 						public void run() {
 							final TextView cacheNotif = new TextView(context);
 							cacheNotif.setText(context.getString(R.string.listing_cached) + RRTime.formatDateTime(timestamp, context));
@@ -320,7 +319,7 @@ public final class InboxListingActivity extends Activity {
 							protected void onFailure(final RequestFailureType type, final Throwable t, final StatusLine status, final String readableMessage) {
 								final RRError error = General.getGeneralErrorForFailure(context, type, t, status,
 										"Reddit API action: Mark all as Read");
-								General.UI_THREAD_HANDLER.post(new Runnable() {
+								AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 									public void run() {
 										General.showResultDialog(InboxListingActivity.this, error);
 									}
@@ -331,7 +330,7 @@ public final class InboxListingActivity extends Activity {
 							protected void onFailure(final APIFailureType type) {
 
 								final RRError error = General.getGeneralErrorForFailure(context, type);
-								General.UI_THREAD_HANDLER.post(new Runnable() {
+								AndroidApi.UI_THREAD_HANDLER.post(new Runnable() {
 									public void run() {
 										General.showResultDialog(InboxListingActivity.this, error);
 									}

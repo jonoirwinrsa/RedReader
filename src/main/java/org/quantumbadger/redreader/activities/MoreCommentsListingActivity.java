@@ -34,16 +34,16 @@
 
 package org.quantumbadger.redreader.activities;
 
+import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
+import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import org.holoeverywhere.preference.PreferenceManager;
-import org.holoeverywhere.preference.SharedPreferences;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.account.RedditAccountChangeListener;
 import org.quantumbadger.redreader.account.RedditAccountManager;
@@ -61,7 +61,6 @@ import java.util.ArrayList;
 
 public class MoreCommentsListingActivity extends RefreshableActivity
 		implements RedditAccountChangeListener,
-		SharedPreferences.OnSharedPreferenceChangeListener,
 		OptionsMenuUtility.OptionsMenuCommentsListener,
 		RedditPostView.PostSelectionListener {
 
@@ -74,20 +73,19 @@ public class MoreCommentsListingActivity extends RefreshableActivity
 
 		super.onCreate(savedInstanceState);
 
-		getSupportActionBar().setHomeButtonEnabled(true);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 		OptionsMenuUtility.fixActionBar(this, getString(R.string.app_name));
 
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
 		final boolean solidblack = PrefsUtility.appearance_solidblack(this, sharedPreferences)
 				&& PrefsUtility.appearance_theme(this, sharedPreferences) == PrefsUtility.AppearanceTheme.NIGHT;
 
 		// TODO load from savedInstanceState
 
-		final View layout = getLayoutInflater().inflate(R.layout.main_single);
+		final View layout = getLayoutInflater().inflate(R.layout.main_single, null);
 		if(solidblack) layout.setBackgroundColor(Color.BLACK);
 		setContentView(layout);
 
@@ -137,27 +135,10 @@ public class MoreCommentsListingActivity extends RefreshableActivity
 				null,
 				force ? CacheRequest.DownloadType.FORCE : CacheRequest.DownloadType.IF_NECESSARY);
 
-		final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		final FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.replace(R.id.main_single_frame, fragment, "comment_listing_fragment");
 		transaction.commit();
 		OptionsMenuUtility.fixActionBar(this, "More Comments"); // TODO string
-	}
-
-	public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
-
-		if(PrefsUtility.isRestartRequired(this, key)) {
-			requestRefresh(RefreshableFragment.RESTART, false);
-		}
-
-		if(PrefsUtility.isRefreshRequired(this, key)) {
-			requestRefresh(RefreshableFragment.ALL, false);
-		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
 	}
 
 	public void onRefreshComments() {

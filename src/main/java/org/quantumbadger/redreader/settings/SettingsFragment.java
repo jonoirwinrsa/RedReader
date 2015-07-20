@@ -20,9 +20,9 @@ package org.quantumbadger.redreader.settings;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import org.holoeverywhere.preference.ListPreference;
-import org.holoeverywhere.preference.Preference;
-import org.holoeverywhere.preference.PreferenceFragment;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
 import org.quantumbadger.redreader.R;
 import org.quantumbadger.redreader.fragments.ChangelogDialog;
 
@@ -59,7 +59,10 @@ public final class SettingsFragment extends PreferenceFragment {
 				R.string.pref_behaviour_actions_comment_tap_key,
 				R.string.pref_behaviour_commentsort_key,
 				R.string.pref_appearance_langforce_key,
-				R.string.pref_behaviour_postcount_key
+				R.string.pref_behaviour_postcount_key,
+				R.string.pref_behaviour_bezel_toolbar_swipezone_key,
+				R.string.pref_behaviour_gifview_mode_key,
+				R.string.pref_behaviour_screenorientation_key
 		};
 
 		for(int pref : listPrefsToUpdate) {
@@ -73,7 +76,6 @@ public final class SettingsFragment extends PreferenceFragment {
 
 			listPreference.setSummary(listPreference.getEntries()[index]);
 
-			// TODO may cause a (tiny) memory leak, or may be ineffective if weak refs are used
 			listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
 					final int index = listPreference.findIndexOfValue((String)newValue);
@@ -89,7 +91,7 @@ public final class SettingsFragment extends PreferenceFragment {
 		final PackageInfo pInfo;
 
 		try {
-			pInfo = getSupportActivity().getPackageManager().getPackageInfo(getSupportActivity().getPackageName(), 0);
+			pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
 		} catch(PackageManager.NameNotFoundException e) {
 			throw new RuntimeException(e);
 		}
@@ -101,7 +103,7 @@ public final class SettingsFragment extends PreferenceFragment {
 		if(changelogPref != null) {
 			changelogPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 				public boolean onPreferenceClick(Preference preference) {
-					ChangelogDialog.newInstance().show(getSupportActivity());
+					ChangelogDialog.newInstance().show(getActivity().getFragmentManager(), null);
 					return true;
 				}
 			});
